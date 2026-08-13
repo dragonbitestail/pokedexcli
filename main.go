@@ -1,10 +1,10 @@
 package main
 
-import (
-    "fmt"
-		"os"
+//import (
+//    "fmt"
+//		"os"
 //		"strings"
-)
+//)
 
 type cliCommand struct {
 	name        string
@@ -17,31 +17,6 @@ type config struct {
 	helpOrder []string
 }
 
-
-func commandExit(cfg *config) error {
-	fmt.Println("Closing the Pokedex... Goodbye!")
-	os.Exit(0)
-	return nil
-}
-
-//var cmdMap map[string]cliCommand
-//var helpKeyOrder []string
-//var cfg config
-
-func commandHelp(cfg *config) error {
-	fmt.Print("Welcome to the Pokedex!\nUsage:\n\n")
-	//for _, cmdKeyName := range helpKeyOrder {
-	for _, cmdKeyName := range cfg.helpOrder {
-		//if cmd, ok := cmdMap[cmdKeyName]; ok {
-		if cmd, ok := cfg.reg[cmdKeyName]; ok {
-			fmt.Printf("%s: %s\n", cmd.name, cmd.description)
-		} else {
-			fmt.Printf("Bad helpKeyOrder name %s. Fix name in helpKeyOrder to match a key in cmdMap", cmdKeyName)
-		}
-
-	}	
-	return nil
-}
 
 func main() {
 	cmdMap := map[string]cliCommand{
