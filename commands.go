@@ -48,29 +48,29 @@ func commandMap(cfg *config) error {
 		targetURL = cfg.mapNextURL
 	}
 	
-  resp, err := getResponse(targetURL, reqGetC)
+  resp, bodyBytes, err := getResponseWithBodyAsBytes(targetURL, reqGetC)
   if err != nil {
       return err
   }
-	defer resp.Body.Close()
 
+	// Ensure we have a happy HTTP status:
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return fmt.Errorf("server returned status: %s", resp.Status)
-
 	}
 
-	//decr, err := getResponseBodyDecoder(targetURL)
-	if err != nil {
+	locMap := locationMap{
+		PreviousURL: "null",
+		NextURL: "null",
+	}
+
+	if err := json.Unmarshal(bodyBytes, &locMap); err != nil {
 		return err
 	}
-	defer resp.Body.Close()
-
-	locMap := locationMap{}
-
-	decr := json.NewDecoder(resp.Body)
-	if err := decr.Decode(&locMap); err != nil {
-		return err
-	}
+	//logr.Debug("JSON unmarshled to locationMap =: ", "values", fmt.Sprintf("%+v", locMap))
+	logr.Debug("JSON unmarshled to locationMap w/ select values =: ",
+		"Count", locMap.Count,
+		"PreviousURL", locMap.PreviousURL,
+		"NextURL", locMap.NextURL)
 
 	cfg.mapNextURL = locMap.NextURL
 	cfg.mapBackURL = locMap.PreviousURL
@@ -80,6 +80,8 @@ func commandMap(cfg *config) error {
 }
 
 func commandMapBack(cfg *config) error {
+	logr.Debug("cfg =: ", "values", fmt.Sprintf("%+v", cfg))
+
 	if cfg.mapBackURL == "null" {
 		fmt.Println( "you're on the first page")
 		return nil
@@ -87,31 +89,31 @@ func commandMapBack(cfg *config) error {
 
 	targetURL := cfg.locationsAPI
 	if cfg.mapBackURL != cfg.locationsAPI && strings.HasPrefix(cfg.mapBackURL, "http") {
-		targetURL = cfg.mapNextURL
+		targetURL = cfg.mapBackURL
 	}
-	
-  resp, err := getResponse(targetURL, reqGetC)
+
+	resp, bodyBytes, err := getResponseWithBodyAsBytes(targetURL, reqGetC)
   if err != nil {
       return err
   }
-	defer resp.Body.Close()
 
+	// Ensure we have a happy HTTP status:
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return fmt.Errorf("server returned status: %s", resp.Status)
-
 	}
 
-	if err != nil {
+	locMap := locationMap{
+		PreviousURL: "null",
+		NextURL: "null",
+	}
+
+	if err := json.Unmarshal(bodyBytes, &locMap); err != nil {
 		return err
 	}
-	defer resp.Body.Close()
-
-	locMap := locationMap{}
-
-	decr := json.NewDecoder(resp.Body)
-	if err := decr.Decode(&locMap); err != nil {
-		return err
-	}
+	logr.Debug("JSON unmarshled to locationMap w/ select values =: ",
+		"Count", locMap.Count,
+		"PreviousURL", locMap.PreviousURL,
+		"NextURL", locMap.NextURL)
 
 	cfg.mapNextURL = locMap.NextURL
 	cfg.mapBackURL = locMap.PreviousURL
@@ -121,28 +123,9 @@ func commandMapBack(cfg *config) error {
 
 }
 
-
 func printLocations(locs []location){
-	//for _, item := range locMap.Results {
 	for _, item := range locs {
 		fmt.Printf("%s\n", item.Name)
 	}
 
 }
-
-
-//func getResponseBodyDecoder(url string) (*json.Decoder, error) {
-//  resp, err := getResponse(url, reqGetC)
-//  if err != nil {
-//      return nil, err
-//  }
-//	//defer resp.Body.Close()
-//
-//	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-//		return nil, fmt.Errorf("server returned status: %s", resp.Status)
-//
-//	}
-//	
-//	decr := json.NewDecoder(resp.Body)
-//	return decr, nil
-//}

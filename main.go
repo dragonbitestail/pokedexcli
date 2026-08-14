@@ -3,6 +3,7 @@ package main
 import (
 	"log/slog"
 	"os"
+	"strings"
 )
 
 type cliCommand struct {
@@ -20,9 +21,9 @@ type config struct {
 }
 
 var handler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-    Level: slog.LevelWarn,
+    Level: getLogLevelFromEnv(),
 })
-var logr = slog.New(handler) 
+var logr = slog.New(handler)
 
 func main() {
 	logr.Info("Starting Pokedex REPL::...")
@@ -64,4 +65,21 @@ func main() {
 	}
 
 	startRepl(&cfg)
+}
+
+func getLogLevelFromEnv() slog.Level {
+    levelStr := os.Getenv("LOG_LEVEL")
+
+    switch strings.ToLower(levelStr) {
+    case "debug":
+        return slog.LevelDebug
+    case "info":
+        return slog.LevelInfo
+    case "warn":
+        return slog.LevelWarn
+    case "error":
+        return slog.LevelError
+    default:
+        return slog.LevelWarn
+    }
 }
