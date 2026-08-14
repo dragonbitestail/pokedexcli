@@ -28,7 +28,9 @@ func startRepl(cfg *config){
 		words := cleanInput(line)
 		command := words[0]
 		if cmd, ok := cfg.reg[command]; ok {
-			cmd.callback(cfg)
+			if err := cmd.callback(cfg); err != nil {
+				logr.Error(fmt.Sprintf("command `%s`, error: %v", command, err))
+			}
 		} else {
 			fmt.Println("Unknown command", )
 		}
