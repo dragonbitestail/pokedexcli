@@ -3,6 +3,7 @@ package pokecache
 import (
 	"time"
 	"sync"
+	"github.com/dragonbitestail/pokedexcli/internal/logging"
 )
 
 type cacheEntry struct {
@@ -15,6 +16,8 @@ type Cache struct {
 	cacheMap map[string]cacheEntry
 	m *sync.Mutex
 }
+
+var logr = ilogger.GetLogger()
 
 
 func NewCache(duration time.Duration) *Cache {
@@ -46,11 +49,12 @@ func (c *Cache) Get(key string) ([]byte, bool) {
 	c.m.Lock()
 	defer c.m.Unlock()
 
-  if _, ok := c.cacheMap[key]; ! ok {
+  cEntry, ok := c.cacheMap[key]
+  if ! ok {
     return nil, false
   }
   
-  return c.cacheMap[key].val, true
+  return cEntry.val, true
 }
 
 
@@ -58,8 +62,8 @@ func (c *Cache) reapLoop(d time.Duration) {
 	tickr := time.NewTicker(d)
 
 	for {
-		//t := <- tickr.C
-		<- tickr.C
+		<- tickr.C  // Block waiting for Ticker Channel to send signal every passed duration; d
+		logr.Info("pokecache >> reapLoop() invalidating candidate cache items", "interval", d)
 		c.m.Lock()
 		for k, v := range c.cacheMap {
 			if time.Now().Sub(v.createdAt) > d {

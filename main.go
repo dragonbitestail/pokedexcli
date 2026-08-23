@@ -1,9 +1,9 @@
 package main
 
 import (
-	"log/slog"
-	"os"
-	"strings"
+	"time"
+	"github.com/dragonbitestail/pokedexcli/internal/cache"
+	"github.com/dragonbitestail/pokedexcli/internal/logging"
 )
 
 type cliCommand struct {
@@ -18,12 +18,11 @@ type config struct {
 	locationsAPI string
 	mapNextURL string
 	mapBackURL string
+	pokeCache *pokecache.Cache
 }
 
-var handler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-    Level: getLogLevelFromEnv(),
-})
-var logr = slog.New(handler)
+
+var logr = ilogger.GetLogger()
 
 func main() {
 	logr.Info("Starting Pokedex REPL::...")
@@ -48,13 +47,15 @@ func main() {
 			description: "Display chunk of Pokemon world locations backwards",
 			callback: commandMapBack,
 		},
-
 	}
 	// Force help items to print in predetermined order:
-	helpKeyOrder := []string{"help", "exit", "map", "mapb"}
+	helpKeyOrder := []string{"help", "exit", "map", "mapb", "explore"}
 
-	locationsEndPoint := "https://pokeapi.co/api/v2/location-area/"
+	//locationsEndPoint := "https://pokeapi.co/api/v2/location-area/"
+	locationsEndPoint := "https://pokeapi.co/api/v2/location-area/?offset=0&limit=20"
 	//locationsEndPoint := "https://pokeapi.co/api/v2/location-area/BAD"
+
+	cachePokeAPI := pokecache.NewCache(time.Duration(time.Second * 200))
 
 	cfg := config{
 		reg: cmdMap,
@@ -62,24 +63,8 @@ func main() {
 		locationsAPI: locationsEndPoint,
 		mapNextURL: "null",
 		mapBackURL: "null",
+		pokeCache: cachePokeAPI,
 	}
 
 	startRepl(&cfg)
-}
-
-func getLogLevelFromEnv() slog.Level {
-    levelStr := os.Getenv("LOG_LEVEL")
-
-    switch strings.ToLower(levelStr) {
-    case "debug":
-        return slog.LevelDebug
-    case "info":
-        return slog.LevelInfo
-    case "warn":
-        return slog.LevelWarn
-    case "error":
-        return slog.LevelError
-    default:
-        return slog.LevelWarn
-    }
 }

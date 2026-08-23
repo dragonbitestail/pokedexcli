@@ -44,7 +44,8 @@ func getResponse(uri string, rType requestType) (*http.Response, error) {
     return resp, nil
 }
 
-func getResponseWithBodyAsBytes(uri string, rType requestType) (*http.Response, []byte, error) {
+//func getResponseWithBodyAsBytes(uri string, rType requestType) (*http.Response, []byte, error) {
+func getBodyBytesWithResponseHTTP(uri string, rType requestType) (*http.Response, []byte, error) {
     // Create new request:
     req, err := http.NewRequest(string(rType), uri, nil)
 		// OR, to include data in the request body as a chunk of bytes. In this case jsonData
