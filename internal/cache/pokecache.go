@@ -21,13 +21,14 @@ var logr = ilogger.GetLogger()
 
 
 func NewCache(duration time.Duration) *Cache {
-	
+
 	c := &Cache {
 		cacheMap: make(map[string]cacheEntry),
 		m: &sync.Mutex{},
 	}
 
 	go c.reapLoop(duration)
+	logr.Info("pokecache >> NewCache() cache created", "duration", duration)
 	return c
 
 }
@@ -43,6 +44,7 @@ func (c *Cache) Add(key string, val []byte) {
 
 	c.cacheMap[key] = cEnt
 
+	logr.Info("pokecache >> Add() cache item added", "key", key)
 }
 
 func (c *Cache) Get(key string) ([]byte, bool) {
@@ -53,7 +55,8 @@ func (c *Cache) Get(key string) ([]byte, bool) {
   if ! ok {
     return nil, false
   }
-  
+	logr.Info("pokecache >> Get() returning cache item", "key", key)
+
   return cEntry.val, true
 }
 

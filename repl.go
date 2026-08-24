@@ -31,7 +31,7 @@ func startRepl(cfg *config){
 		}
 		command := words[0]
 		if cmd, ok := cfg.reg[command]; ok {
-			if err := cmd.callback(cfg); err != nil {
+			if err := cmd.callback(cfg, command, words[1:]); err != nil {
 				logr.Error(fmt.Sprintf("command `%s`, error: %v", command, err))
 			}
 		} else {

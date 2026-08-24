@@ -22,17 +22,16 @@ type locationMap struct {
 }
 
 
-func commandExit(cfg *config) error {
+func commandExit(cfg *config, cmd string, args []string) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func commandHelp(cfg *config) error {
+func commandHelp(cfg *config, cmd string, args []string) error {
 	fmt.Print("Welcome to the Pokedex!\nUsage:\n\n")
 	for _, cmdKeyName := range cfg.helpOrder {
-		if cmd, ok := cfg.reg[cmdKeyName]; ok {
-			fmt.Printf("%s: %s\n", cmd.name, cmd.description)
+		if cmd, ok := cfg.reg[cmdKeyName]; ok { fmt.Printf("%s: %s\n", cmd.name, cmd.description)
 		} else {
 			fmt.Printf("Bad helpKeyOrder name %s. Fix name in helpKeyOrder to match a key in cmdMap", cmdKeyName)
 		}
@@ -41,21 +40,31 @@ func commandHelp(cfg *config) error {
 	return nil
 }
 
-func commandExplore(cfg *config) error {
-	logr.Debug(">>>TODO<<<< commandExplore() IN", "values", fmt.Sprintf("%+v", cfg))
-	targetURL := "https://pokeapi.co/api/v2/location-area/" + "TODO"
-	logr.Info("commandMap()", "FinalTargetURL", targetURL)
+func commandExplore(cfg *config, cmd string, args []string) error {
+	logr.Debug(">>>TODO<<<< commandExplore() IN", "values", fmt.Sprintf("%+v", cfg), "args", args)
+	if len(args) < 1 {
+		return fmt.Errorf("explore command requires area parameter: explore <area>")
+	}
+	targetURL := "https://pokeapi.co/api/v2/location-area/" + args[0]
+	logr.Info("commandExplore()", "FinalTargetURL", targetURL)
 
-	//locMap, err := getLocationMap(cfg, targetURL)
-	//if err != nil {
-	//	return err
-	//}
+	areaMap, err := getMapArea(cfg, targetURL)
+	if err != nil {
+		return err
+	}
 
-	//printLocations(locMap.Results)
+	fmt.Printf("Exploring %s...\n", args[0])
+	if len(areaMap.PokemonEncounters) > 0 {
+		fmt.Println("Found Pokemon:")
+	}
+	for _, enctr := range areaMap.PokemonEncounters {
+		fmt.Printf("\t- %s\n", enctr.Pokemon.Name)
+	}
+
 	return nil
 }
 
-func commandMap(cfg *config) error {
+func commandMap(cfg *config, cmd string, args []string) error {
 	logr.Debug("commandMap() IN", "values", fmt.Sprintf("%+v", cfg))
 
 	targetURL := cfg.locationsAPI
@@ -74,7 +83,7 @@ func commandMap(cfg *config) error {
 	return nil
 }
 
-func commandMapBack(cfg *config) error {
+func commandMapBack(cfg *config, cmd string, args []string) error {
 	logr.Debug("commandMapBack() IN", "values", fmt.Sprintf("%+v", cfg))
 
 	if cfg.mapBackURL == "null" {
@@ -98,6 +107,34 @@ func commandMapBack(cfg *config) error {
 	return nil
 }
 
+
+func getMapArea(cfg *config, targetURL string) (*PokeMapArea, error) {
+
+	cacheBytes, ok := cfg.pokeCache.Get(targetURL)
+	if ! ok {
+		var err error
+		cacheBytes, err = getResponseBytes(targetURL)
+		if err != nil {
+			return nil, err
+		}
+		cfg.pokeCache.Add(targetURL, cacheBytes)
+	}
+
+	areaMap := PokeMapArea{}
+
+	if err := json.Unmarshal(cacheBytes, &areaMap); err != nil {
+		return nil, err
+	}
+	logr.Info("getLocationMap(): JSON unmarshled to locationMap w/ select values",
+		"Area ID", areaMap.ID,
+		"Location Name", areaMap.Location.Name,
+		"Area Name ", areaMap.Name,
+		"Pokemon Area Encounters count", len(areaMap.PokemonEncounters))
+
+	//logr.Info("getLocationMap(): updated cfg back & next", "mapBackURL", cfg.mapBackURL, "mapNextURL", cfg.mapNextURL)
+	return &areaMap, nil
+}
+
 // Return unmarshled response as locationMap from either cached or HTTP
 // retrieved pokeAPI
 func getLocationMap(cfg *config, targetURL string) (*locationMap, error) {
@@ -109,7 +146,6 @@ func getLocationMap(cfg *config, targetURL string) (*locationMap, error) {
 		if err != nil {
 			return nil, err
 		}
-		logr.Info("getLocationMap(): adding HTTP response bytes to cache", "targetURL", targetURL)
 		cfg.pokeCache.Add(targetURL, cacheBytes)
 	}
 

@@ -1,26 +1,12 @@
 package main
 
 import (
+	"os"
+	"strconv"
 	"time"
 	"github.com/dragonbitestail/pokedexcli/internal/cache"
 	"github.com/dragonbitestail/pokedexcli/internal/logging"
 )
-
-type cliCommand struct {
-	name        string
-	description string
-	callback    func(*config) error
-}
-
-type config struct {
-	reg map[string]cliCommand
-	helpOrder []string
-	locationsAPI string
-	mapNextURL string
-	mapBackURL string
-	pokeCache *pokecache.Cache
-}
-
 
 var logr = ilogger.GetLogger()
 
@@ -60,8 +46,16 @@ func main() {
 	//locationsEndPoint := "https://pokeapi.co/api/v2/location-area/"
 	locationsEndPoint := "https://pokeapi.co/api/v2/location-area/?offset=0&limit=20"
 	//locationsEndPoint := "https://pokeapi.co/api/v2/location-area/BAD"
-
-	cachePokeAPI := pokecache.NewCache(time.Duration(time.Second * 200))
+	cacheDuration := time.Second * 200
+	cacheSecs, ok := os.LookupEnv("POKEDEX_CACHE_DUR_SECS")
+	if ok {
+		i, err := strconv.Atoi(cacheSecs)
+    if err != nil {
+        panic(err)
+    }
+		cacheDuration = time.Second * time.Duration(i)
+	}
+	cachePokeAPI := pokecache.NewCache(time.Duration(cacheDuration))
 
 	cfg := config{
 		reg: cmdMap,
