@@ -49,7 +49,7 @@ func main() {
 		},
 	}
 	// Force help items to print in predetermined order:
-	helpKeyOrder := []string{"help", "exit", "map", "mapb", "explore"}
+	helpKeyOrder := []string{"help", "exit", "map", "mapb"}
 
 	//locationsEndPoint := "https://pokeapi.co/api/v2/location-area/"
 	locationsEndPoint := "https://pokeapi.co/api/v2/location-area/?offset=0&limit=20"
