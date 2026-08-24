@@ -47,9 +47,15 @@ func main() {
 			description: "Display chunk of Pokemon world locations backwards",
 			callback: commandMapBack,
 		},
+		"explore": {
+			name: "explore",
+			description: "List Pokemon in given area",
+			callback: commandExplore,
+		},
+
 	}
 	// Force help items to print in predetermined order:
-	helpKeyOrder := []string{"help", "exit", "map", "mapb"}
+	helpKeyOrder := []string{"help", "exit", "map", "mapb", "explore"}
 
 	//locationsEndPoint := "https://pokeapi.co/api/v2/location-area/"
 	locationsEndPoint := "https://pokeapi.co/api/v2/location-area/?offset=0&limit=20"

@@ -37,7 +37,21 @@ func commandHelp(cfg *config) error {
 			fmt.Printf("Bad helpKeyOrder name %s. Fix name in helpKeyOrder to match a key in cmdMap", cmdKeyName)
 		}
 
-	}	
+	}
+	return nil
+}
+
+func commandExplore(cfg *config) error {
+	logr.Debug(">>>TODO<<<< commandExplore() IN", "values", fmt.Sprintf("%+v", cfg))
+	targetURL := "https://pokeapi.co/api/v2/location-area/" + "TODO"
+	logr.Info("commandMap()", "FinalTargetURL", targetURL)
+
+	//locMap, err := getLocationMap(cfg, targetURL)
+	//if err != nil {
+	//	return err
+	//}
+
+	//printLocations(locMap.Results)
 	return nil
 }
 
@@ -49,7 +63,7 @@ func commandMap(cfg *config) error {
 		targetURL = cfg.mapNextURL
 	}
 	logr.Info("commandMap()", "FinalTargetURL", targetURL)
-	
+
 	locMap, err := getLocationMap(cfg, targetURL)
 	if err != nil {
 		return err
@@ -120,7 +134,7 @@ func getLocationMap(cfg *config, targetURL string) (*locationMap, error) {
 	cfg.mapNextURL = locMap.NextURL
 
 	logr.Info("getLocationMap(): updated cfg back & next", "mapBackURL", cfg.mapBackURL, "mapNextURL", cfg.mapNextURL)
-	return &locMap, nil 
+	return &locMap, nil
 }
 
 func getResponseBytes(targetURL string) ([]byte, error) {
