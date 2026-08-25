@@ -10,42 +10,59 @@ import (
 
 var logr = ilogger.GetLogger()
 
+var cmdMap = map[string]cliCommand {
+	"exit": {
+		name: "exit",
+		description: "Exit the Pokedex",
+		callback: commandExit,
+	},
+	"help": {
+		name: "help",
+		description: "Displays a help message",
+		callback: commandHelp,
+	},
+	"map": {
+		name: "map",
+		description: "Display chunk of Pokemon world locations",
+		callback: commandMap,
+	},
+	"mapb": {
+		name: "mapb",
+		description: "Display chunk of Pokemon world locations backwards",
+		callback: commandMapBack,
+	},
+	"explore": {
+		name: "explore",
+		description: "List Pokemon in given area",
+		callback: commandExplore,
+	},
+	"catch": {
+		name: "catch",
+		description: "Attempt to Catch named Pokemon",
+		callback: commandCatch,
+	},
+
+}
+
+// Force help items to print in predetermined order:
+var helpKeyOrder = []string{"help", "exit", "map", "mapb", "explore", "catch"}
+var cfg = config{
+	reg: cmdMap,
+	helpOrder: helpKeyOrder,
+	rootAPI: "https://pokeapi.co/api/v2",
+	//locationsAPI: SEE main()
+	mapNextURL: "null",
+	mapBackURL: "null",
+	//pokeCache: SEE main()
+}
+
 func main() {
 	logr.Info("Starting Pokedex REPL::...")
-	cmdMap := map[string]cliCommand{
-		"exit": {
-			name: "exit",
-			description: "Exit the Pokedex",
-			callback: commandExit,
-		},
-		"help": {
-			name: "help",
-			description: "Displays a help message",
-			callback: commandHelp,
-		},
-		"map": {
-			name: "map",
-			description: "Display chunk of Pokemon world locations",
-			callback: commandMap,
-		},
-		"mapb": {
-			name: "mapb",
-			description: "Display chunk of Pokemon world locations backwards",
-			callback: commandMapBack,
-		},
-		"explore": {
-			name: "explore",
-			description: "List Pokemon in given area",
-			callback: commandExplore,
-		},
-
-	}
-	// Force help items to print in predetermined order:
-	helpKeyOrder := []string{"help", "exit", "map", "mapb", "explore"}
 
 	//locationsEndPoint := "https://pokeapi.co/api/v2/location-area/"
 	locationsEndPoint := "https://pokeapi.co/api/v2/location-area/?offset=0&limit=20"
 	//locationsEndPoint := "https://pokeapi.co/api/v2/location-area/BAD"
+
 	cacheDuration := time.Second * 200
 	cacheSecs, ok := os.LookupEnv("POKEDEX_CACHE_DUR_SECS")
 	if ok {
@@ -57,14 +74,8 @@ func main() {
 	}
 	cachePokeAPI := pokecache.NewCache(time.Duration(cacheDuration))
 
-	cfg := config{
-		reg: cmdMap,
-		helpOrder: helpKeyOrder,
-		locationsAPI: locationsEndPoint,
-		mapNextURL: "null",
-		mapBackURL: "null",
-		pokeCache: cachePokeAPI,
-	}
+	cfg.locationsAPI = locationsEndPoint
+	cfg.pokeCache = cachePokeAPI
 
 	startRepl(&cfg)
 }
