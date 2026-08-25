@@ -50,6 +50,7 @@ var cfg = config{
 	reg: cmdMap,
 	helpOrder: helpKeyOrder,
 	rootAPI: "https://pokeapi.co/api/v2",
+	pokemonEP: "/pokemon/",
 	//locationsAPI: SEE main()
 	mapNextURL: "null",
 	mapBackURL: "null",

@@ -3,22 +3,10 @@ package main
 import (
 		"encoding/json"
     "fmt"
+		"math/rand"
 		"os"
 		"strings"
 )
-
-// ==========Map Location structs
-type location struct {
-	Name string `json:"name"`
-	URL string  `json:"url"`
-}
-type locationMap struct {
-	Count int `json:"count"`
-	NextURL string  `json:"next"`
-	PreviousURL string  `json:"previous"`
-	Results []location  `json:"results"`
-
-}
 
 
 func commandExit(cfg *config, cmd string, args []string) error {
@@ -44,10 +32,31 @@ func commandCatch(cfg *config, cmd string, args []string) error {
 	if len(args) < 1 {
 		return fmt.Errorf("catch command requires Pokemon name parameter: catch <pokemon>")
 	}
+	// Get Pokemon requested and unmarshal data to a new Pokemon struct type
+	pokeIdentifier := args[0]
+	targetURL := cfg.rootAPI + cfg.pokemonEP + pokeIdentifier
+	pokeObj, err := getObjFromAPI[Pokemon](cfg, targetURL)
+	if err != nil {
+		return err
+	}
+	logr.Info("Retrieved Pokemon", "pokemon", pokeObj.Name, "base_experience", pokeObj.BaseExperience)
 
-	fmt.Printf("Throwing a Pokeball at %s...\nTODO: role the dice to catch pokemon\nmiss message or add to registry", args[0])
+	// Extract value to base capture percentage on.
+	fmt.Printf("Throwing a Pokeball at %s...\n", pokeObj.Name)
+
+	roleResults := rand.Intn(pokeObj.BaseExperience) / 100
+	if roleResults == 0 { // The higher the experience, the more often we should get 1, so success should be only when we get 0
+		logr.Info("Pokemon caught", "name", pokeObj.Name)
+		fmt.Println(pokeObj.Name, "was caught!")
+		pokeReg[pokeObj.Name] = pokeObj
+	}else {
+		logr.Info("Pokemon got away", "name", pokeObj.Name)
+		fmt.Println(pokeObj.Name, "escaped!")
+	}
+
 	return nil
 }
+
 func commandExplore(cfg *config, cmd string, args []string) error {
 	logr.Debug("commandExplore() IN", "values", fmt.Sprintf("%+v", cfg), "args", args)
 	if len(args) < 1 {
@@ -56,7 +65,7 @@ func commandExplore(cfg *config, cmd string, args []string) error {
 	targetURL := "https://pokeapi.co/api/v2/location-area/" + args[0]
 	logr.Info("commandExplore()", "FinalTargetURL", targetURL)
 
-	areaMap, err := getMapArea(cfg, targetURL)
+	areaMap, err := getObjFromAPI[PokeMapArea](cfg, targetURL)
 	if err != nil {
 		return err
 	}
@@ -72,6 +81,27 @@ func commandExplore(cfg *config, cmd string, args []string) error {
 	return nil
 }
 
+func getObjFromAPI[T PokeAPI](cfg *config, targetURL string) (*T, error) {
+	var obj T
+
+	cacheBytes, ok := cfg.pokeCache.Get(targetURL)
+	if ! ok {
+		var err error
+		cacheBytes, err = getResponseBytes(targetURL)
+		if err != nil {
+			return &obj, err
+		}
+		cfg.pokeCache.Add(targetURL, cacheBytes)
+	}
+
+	if err := json.Unmarshal(cacheBytes, &obj); err != nil {
+		return &obj, err
+	}
+	logr.Info("getObjFromAPI(): JSON unmarshled to obj", "type", fmt.Sprintf("%T",obj))
+
+	return &obj, nil
+}
+
 func commandMap(cfg *config, cmd string, args []string) error {
 	logr.Debug("commandMap() IN", "values", fmt.Sprintf("%+v", cfg))
 
@@ -81,10 +111,17 @@ func commandMap(cfg *config, cmd string, args []string) error {
 	}
 	logr.Info("commandMap()", "FinalTargetURL", targetURL)
 
-	locMap, err := getLocationMap(cfg, targetURL)
+	locMap, err := getObjFromAPI[locationMap](cfg, targetURL)
 	if err != nil {
 		return err
 	}
+
+	if targetURL == cfg.locationsAPI {
+		cfg.mapBackURL = "null"
+	} else {
+		cfg.mapBackURL = locMap.PreviousURL
+	}
+	cfg.mapNextURL = locMap.NextURL
 
 	printLocations(locMap.Results)
 	logr.Debug("commandMap() OUT", "values", fmt.Sprintf("%+v", cfg))
@@ -105,70 +142,11 @@ func commandMapBack(cfg *config, cmd string, args []string) error {
 	}
 	logr.Info("commandMapBack()", "FinalTargetURL", targetURL)
 
-	locMap, err := getLocationMap(cfg, targetURL)
+	//locMap, err := getLocationMap(cfg, targetURL)
+	locMap, err := getObjFromAPI[locationMap](cfg, targetURL)
 	if err != nil {
 		return err
 	}
-
-	printLocations(locMap.Results)
-	logr.Debug("commandMapBack() OUT", "values", fmt.Sprintf("%+v", cfg))
-	return nil
-}
-
-
-func getMapArea(cfg *config, targetURL string) (*PokeMapArea, error) {
-
-	cacheBytes, ok := cfg.pokeCache.Get(targetURL)
-	if ! ok {
-		var err error
-		cacheBytes, err = getResponseBytes(targetURL)
-		if err != nil {
-			return nil, err
-		}
-		cfg.pokeCache.Add(targetURL, cacheBytes)
-	}
-
-	areaMap := PokeMapArea{}
-
-	if err := json.Unmarshal(cacheBytes, &areaMap); err != nil {
-		return nil, err
-	}
-	logr.Info("getLocationMap(): JSON unmarshled to locationMap w/ select values",
-		"Area ID", areaMap.ID,
-		"Location Name", areaMap.Location.Name,
-		"Area Name ", areaMap.Name,
-		"Pokemon Area Encounters count", len(areaMap.PokemonEncounters))
-
-	//logr.Info("getLocationMap(): updated cfg back & next", "mapBackURL", cfg.mapBackURL, "mapNextURL", cfg.mapNextURL)
-	return &areaMap, nil
-}
-
-// Return unmarshled response as locationMap from either cached or HTTP
-// retrieved pokeAPI
-func getLocationMap(cfg *config, targetURL string) (*locationMap, error) {
-
-	cacheBytes, ok := cfg.pokeCache.Get(targetURL)
-	if ! ok {
-		var err error
-		cacheBytes, err = getResponseBytes(targetURL)
-		if err != nil {
-			return nil, err
-		}
-		cfg.pokeCache.Add(targetURL, cacheBytes)
-	}
-
-	locMap := locationMap{
-		PreviousURL: "null",
-		NextURL: "null",
-	}
-
-	if err := json.Unmarshal(cacheBytes, &locMap); err != nil {
-		return nil, err
-	}
-	logr.Info("getLocationMap(): JSON unmarshled to locationMap w/ select values",
-		"Count", locMap.Count,
-		"PreviousURL", locMap.PreviousURL,
-		"NextURL", locMap.NextURL)
 
 	if targetURL == cfg.locationsAPI {
 		cfg.mapBackURL = "null"
@@ -177,8 +155,9 @@ func getLocationMap(cfg *config, targetURL string) (*locationMap, error) {
 	}
 	cfg.mapNextURL = locMap.NextURL
 
-	logr.Info("getLocationMap(): updated cfg back & next", "mapBackURL", cfg.mapBackURL, "mapNextURL", cfg.mapNextURL)
-	return &locMap, nil
+	printLocations(locMap.Results)
+	logr.Debug("commandMapBack() OUT", "values", fmt.Sprintf("%+v", cfg))
+	return nil
 }
 
 func getResponseBytes(targetURL string) ([]byte, error) {
