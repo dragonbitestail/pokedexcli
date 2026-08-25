@@ -1,4 +1,3 @@
-
 package main
 
 import (
@@ -40,8 +39,17 @@ func commandHelp(cfg *config, cmd string, args []string) error {
 	return nil
 }
 
+func commandCatch(cfg *config, cmd string, args []string) error {
+	logr.Debug("commandCatch() IN", "values", fmt.Sprintf("%+v", cfg), "args", args)
+	if len(args) < 1 {
+		return fmt.Errorf("catch command requires Pokemon name parameter: catch <pokemon>")
+	}
+
+	fmt.Printf("Throwing a Pokeball at %s...\nTODO: role the dice to catch pokemon\nmiss message or add to registry", args[0])
+	return nil
+}
 func commandExplore(cfg *config, cmd string, args []string) error {
-	logr.Debug(">>>TODO<<<< commandExplore() IN", "values", fmt.Sprintf("%+v", cfg), "args", args)
+	logr.Debug("commandExplore() IN", "values", fmt.Sprintf("%+v", cfg), "args", args)
 	if len(args) < 1 {
 		return fmt.Errorf("explore command requires area parameter: explore <area>")
 	}
