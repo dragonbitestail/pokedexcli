@@ -13,6 +13,7 @@ type cliCommand struct {
 type config struct {
 	reg map[string]cliCommand
 	helpOrder []string
+	rootAPI string
 	locationsAPI string
 	mapNextURL string
 	mapBackURL string
