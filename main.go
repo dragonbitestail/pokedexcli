@@ -51,6 +51,10 @@ var cmdMap = map[string]cliCommand {
 
 // Force help items to print in predetermined order:
 var helpKeyOrder = []string{"help", "exit", "map", "mapb", "explore", "catch", "inspect"}
+
+var cacheDuration = time.Second * 200
+var cachePokeAPI *pokecache.Cache
+
 var cfg = config{
 	reg: cmdMap,
 	helpOrder: helpKeyOrder,
@@ -59,7 +63,24 @@ var cfg = config{
 	//locationsAPI: SEE main()
 	mapNextURL: "null",
 	mapBackURL: "null",
-	//pokeCache: SEE main()
+	//pokeCache: SEE init()
+}
+
+
+func init(){
+	cacheSecs, ok := os.LookupEnv("POKEDEX_CACHE_DUR_SECS")
+	if ok {
+		i, err := strconv.Atoi(cacheSecs)
+	  if err != nil {
+	      panic(err)
+	  }
+	cacheDuration = time.Second * time.Duration(i)
+}
+
+	cachePokeAPI = pokecache.NewCache(time.Duration(cacheDuration))
+
+	cfg.pokeCache = cachePokeAPI
+
 }
 
 func main() {
@@ -68,19 +89,9 @@ func main() {
 	//locationsEndPoint := "https://pokeapi.co/api/v2/location-area/"
 	locationsEndPoint := "https://pokeapi.co/api/v2/location-area/?offset=0&limit=20"
 
-	cacheDuration := time.Second * 200
-	cacheSecs, ok := os.LookupEnv("POKEDEX_CACHE_DUR_SECS")
-	if ok {
-		i, err := strconv.Atoi(cacheSecs)
-    if err != nil {
-        panic(err)
-    }
-		cacheDuration = time.Second * time.Duration(i)
-	}
-	cachePokeAPI := pokecache.NewCache(time.Duration(cacheDuration))
-
 	cfg.locationsAPI = locationsEndPoint
 	cfg.pokeCache = cachePokeAPI
 
-	startRepl(&cfg)
+	isTest := false
+	startRepl(&cfg, os.Stdin, isTest)
 }

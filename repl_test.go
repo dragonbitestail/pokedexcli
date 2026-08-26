@@ -2,7 +2,13 @@ package main
 
 import (
 	"testing"
+	"io"
+	"strings"
 )
+
+//var cacheDuration = time.Second * time.Duration(200)
+//var cachePokeAPI = pokecache.NewCache(time.Duration(cacheDuration))
+
 
 func TestCleanInput(t *testing.T) {
 	cases := []struct {
@@ -32,7 +38,7 @@ func TestCleanInput(t *testing.T) {
 		},
 
 	}
-	
+
 	for _, c := range cases {
 		actual := cleanInput(c.input)
 
@@ -52,4 +58,19 @@ func TestCleanInput(t *testing.T) {
 		}
 
 	}
+}
+
+// TODO: Refactor startRepl() to allow passing of
+// io.Reader instead of hardcoding os.Stdin
+// https://stackoverflow.com/questions/46365221/fill-os-stdin-for-function-that-reads-from-it
+func TestStartRepl(t *testing.T){
+
+	input := "catch 33\n"
+	var reader io.Reader = strings.NewReader(input)
+	isTest := true
+	startRepl(&cfg, reader, isTest)
+	//if err != nil {
+	//   t.Errorf("Failed to read from strings.NewReader: %w", err)
+	//}
+	return
 }

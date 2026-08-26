@@ -36,6 +36,7 @@ func commandInspect(cfg *config, cmd string, args []string) error {
 	pokeIdentifier := args[0]
 	pObj, ok := pokeReg[pokeIdentifier]
 	if !ok {
+		logr.Debug("Pokemon caught registry", "pokemon_name", pokeIdentifier)
 		fmt.Println("you have not caught that pokemon")
 		return nil
 	}

@@ -3,25 +3,21 @@ package main
 import (
 	"testing"
 	"bytes"
-	//"fmt"
+	"fmt"
 	"io"
 	"log"
+	"math/rand"
 	"os"
 	"strings"
 	"time"
-	"github.com/dragonbitestail/pokedexcli/internal/cache"
 )
-
-
-var cacheDuration = time.Second * time.Duration(200)
-var cachePokeAPI = pokecache.NewCache(time.Duration(cacheDuration))
 
 
 // WIP: Utility function for command func calls which output to stdout as a string
 // Modified from: https://go.dev/play/p/PNqa5M8zo7
 // a link from SO:
 // https://stackoverflow.com/questions/10473800/in-go-how-do-i-capture-stdout-of-a-function-into-a-string
-func getStdout(fcall func(*config, string, []string) error, cfg *config, cmd string, args []string) string {
+func getStdout(fcall func(*config, string, []string) error, cfg *config, cmd string, args []string) (string, error) {
 	old := os.Stdout // keep backup of the real stdout
 	r, w, err := os.Pipe()
 	if err != nil {
@@ -37,32 +33,27 @@ func getStdout(fcall func(*config, string, []string) error, cfg *config, cmd str
 		outC <- buf.String()
 	}()
 
-	fcall(cfg, cmd, args) // works fine here
+	var ferr error
+	ferr = fcall(cfg, cmd, args) // works fine here
 
 	// back to normal state
 	w.Close()
 	os.Stdout = old // restoring the real stdout
 	out := <-outC
-	return out
+	return out, ferr
 }
 
-
-
 func TestHelpCommand(t *testing.T) {
-	//t.Errorf("TODO: write this test!")
-	//cfg := config{}
-	out := getStdout(commandHelp, &cfg, "help", []string{} )
-
-	// reading our temp stdout
-	//fmt.Println("previous output size:", len(out))
-	//fmt.Print(out)
+	out, err := getStdout(commandHelp, &cfg, "help", []string{} )
+	if err != nil {
+		t.Errorf("%v", err)
+	}
 
 	// asser the output of "help" command contains 3 standard lines of: welcome, usage, spacer-line
 	// followed by len command lines.
-	//got := strings.Count(out, "\n") + 1	// plus 1 to account for last line not ending in nl
 	got := strings.Count(out, "\n")
 	want := len(cmdMap) + 3
-	if got != want {
+	if got != want || err != nil {
 		t.Errorf("help out lines %d, did not match expected lines %d. " +
 			"For each command, there should be corresponding entry in helpKeyOrder",
 			got, want)
@@ -71,13 +62,16 @@ func TestHelpCommand(t *testing.T) {
 }
 
 func TestMapAndMapbCommand(t *testing.T) {
-	cfg.pokeCache = cachePokeAPI
 	cfg.locationsAPI = "https://pokeapi.co/api/v2/location-area/?offset=0&limit=20"
 
-	_ = getStdout(commandMap, &cfg, "map", []string{})
-	_ = getStdout(commandMap, &cfg, "map", []string{})
+	var err error
+	_, err = getStdout(commandMap, &cfg, "map", []string{})
+	_, err = getStdout(commandMap, &cfg, "map", []string{})
 
-	got := getStdout(commandMapBack, &cfg, "map", []string{})
+	got, err := getStdout(commandMapBack, &cfg, "map", []string{})
+	if err != nil {
+		t.Errorf("%v", err)
+	}
 
 	want := `canalave-city-area
 eterna-city-area
@@ -106,12 +100,16 @@ mt-coronet-1f-from-exterior
 }
 
 func TestExploreCommand(t *testing.T) {
-	cfg.pokeCache = cachePokeAPI
 
-	//got := getStdout(commandExplore, &cfg, "explore", []string{"1"})
-	got := getStdout(commandExplore, &cfg, "explore", []string{"canalave-city-area"})
+	//test_args := []string{"1"}
+	test_args := []string{"canalave-city-area"}
+	got, err := getStdout(commandExplore, &cfg, "explore", test_args)
+	if err != nil {
+		t.Errorf("%v", err)
+	}
 
-	want := `Exploring canalave-city-area...
+	//want := `Exploring canalave-city-area...
+	want_tmpl := `Exploring %s...
 Found Pokemon:
 	- tentacool
 	- tentacruel
@@ -125,9 +123,55 @@ Found Pokemon:
 	- finneon
 	- lumineon
 `
-
+	want := fmt.Sprintf(want_tmpl, test_args[0])
 	if got != want {
 		t.Errorf("got\n%s but, wanted\n%s", got, want)
 	}
 
+}
+
+func TestCommandCatchAndInspect(t *testing.T) {
+
+	argsPoke := []string{"tentacool"}
+	isCaughtMsg := fmt.Sprintf("%s was caught!\n", argsPoke[0])
+
+	// Attempt to catch our Pokemon a reasonably number of times
+	for i := 0; i < 10; i++ {
+		caughtMsg, err := getStdout(commandCatch, &cfg, "catch", argsPoke)
+		if err != nil {
+			t.Errorf("%v", err)
+		}
+		if strings.Contains(caughtMsg, isCaughtMsg) {
+			// Done. We have our Pokemon for inspect
+			break
+		}
+
+		// Sleep a bit so we don't spam the server:
+		throttle := time.Duration(rand.Intn(300) + 401) // 400 - 700
+		fmt.Printf("CATCH-FAIL: %s. Retrying in %v", caughtMsg, throttle)
+		time.Sleep(throttle * time.Millisecond)
+
+	}
+	got, err := getStdout(commandInspect, &cfg, "inspect", []string{"tentacool"})
+	if err != nil {
+		t.Errorf("%v", err)
+	}
+
+	want := `Name: tentacool
+Height: 9
+Weight: 455
+Types:
+	-hp: 40
+	-attack: 40
+	-defense: 35
+	-special-attack: 50
+	-special-defense: 100
+	-speed: 70
+Types:
+	- water
+	- poison
+`
+	if got != want {
+		t.Errorf("got\n%sbut, wanted\n%s", got, want)
+	}
 }

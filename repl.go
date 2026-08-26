@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"os"
+	"io"
 	"strings"
 )
 
@@ -17,14 +17,15 @@ func cleanInput(text string) []string {
 	return lowered
 }
 
-func startRepl(cfg *config){
+func startRepl(cfg *config, reader io.Reader, isTest bool){
 
-	scanner := bufio.NewScanner(os.Stdin)
+	scanner := bufio.NewScanner(reader)
 	for {
 		fmt.Print("Pokedex > ")
 		scanner.Scan()
 
 		line := scanner.Text()
+		logr.Info("scanner.text", "line", line)
 		words := cleanInput(line)
 		if len(words) < 1 {
 			continue
@@ -37,7 +38,9 @@ func startRepl(cfg *config){
 		} else {
 			fmt.Println("Unknown command", )
 		}
-
+		if isTest {
+			return
+		}
 	}
 
 }
