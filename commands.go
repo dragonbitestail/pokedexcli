@@ -18,9 +18,10 @@ func commandExit(cfg *config, cmd string, args []string) error {
 func commandHelp(cfg *config, cmd string, args []string) error {
 	fmt.Print("Welcome to the Pokedex!\nUsage:\n\n")
 	for _, cmdKeyName := range cfg.helpOrder {
-		if cmd, ok := cfg.reg[cmdKeyName]; ok { fmt.Printf("%s: %s\n", cmd.name, cmd.description)
+		if cmd, ok := cfg.reg[cmdKeyName]; ok {
+			fmt.Printf("%s: %s\n", cmd.name, cmd.description)
 		} else {
-			fmt.Printf("Bad helpKeyOrder name %s. Fix name in helpKeyOrder to match a key in cmdMap", cmdKeyName)
+			return fmt.Errorf("Bad helpKeyOrder name %s. Fix name in helpKeyOrder to match a key in cmdMap", cmdKeyName)
 		}
 
 	}
