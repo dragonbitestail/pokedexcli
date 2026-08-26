@@ -21,7 +21,7 @@ func getResponse(uri string, rType requestType) (*http.Response, error) {
 		// would usually be a some json.Marshel'd struct.
     //req, err := http.NewRequest(string(rType), uri, bytes.NewBuffer(jsonData))
     if err != nil {
-      fmt.Println("getLastModified(): Returning error for creating request.")
+      fmt.Println("getResponse(): Returning error for creating request.")
       return nil, err
     }
     
@@ -33,7 +33,7 @@ func getResponse(uri string, rType requestType) (*http.Response, error) {
     client := &http.Client{}
     resp, err := client.Do(req)
     if err != nil {
-      fmt.Println("getLastModified(): Returning error for making request.")
+      fmt.Println("getResponse(): Returning error for making request.")
       return nil, err
     }
     // CALLER IS EXPECTED TO CLOSE THE BODY!!!! defer resp.Body.Close()
@@ -63,7 +63,7 @@ func getBodyBytesWithResponseHTTP(uri string, rType requestType) (*http.Response
     client := &http.Client{}
     resp, err := client.Do(req)
     if err != nil {
-      fmt.Println("getLastModified(): Returning error for making request.")
+      fmt.Println("getBodyBytesWithResponseHTTP(): Returning error for making request.")
       return nil, nil, err
     }
     defer resp.Body.Close()
