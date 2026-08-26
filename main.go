@@ -67,7 +67,6 @@ func main() {
 
 	//locationsEndPoint := "https://pokeapi.co/api/v2/location-area/"
 	locationsEndPoint := "https://pokeapi.co/api/v2/location-area/?offset=0&limit=20"
-	//locationsEndPoint := "https://pokeapi.co/api/v2/location-area/BAD"
 
 	cacheDuration := time.Second * 200
 	cacheSecs, ok := os.LookupEnv("POKEDEX_CACHE_DUR_SECS")
