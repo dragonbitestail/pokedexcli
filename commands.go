@@ -100,6 +100,7 @@ func commandExplore(cfg *config, cmd string, args []string) error {
 
 	fmt.Printf("Exploring %s...\n", args[0])
 	if len(areaMap.PokemonEncounters) > 0 {
+		logr.Info("commandExplore()", "areaMap.Name", areaMap.Name)
 		fmt.Println("Found Pokemon:")
 	}
 	for _, enctr := range areaMap.PokemonEncounters {
