@@ -46,11 +46,16 @@ var cmdMap = map[string]cliCommand {
 		description: "List details for a Pokemon: inspect <pokemon_name>",
 		callback: commandInspect,
 	},
+	"pokedex": {
+		name: "pokedex",
+		description: "List all caught Pokemon: pokedex",
+		callback: commandPokedex,
+	},
 
 }
 
 // Force help items to print in predetermined order:
-var helpKeyOrder = []string{"help", "exit", "map", "mapb", "explore", "catch", "inspect"}
+var helpKeyOrder = []string{"help", "exit", "map", "mapb", "explore", "catch", "inspect", "pokedex"}
 
 var cacheDuration = time.Second * 200
 var cachePokeAPI *pokecache.Cache

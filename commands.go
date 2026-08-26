@@ -27,6 +27,20 @@ func commandHelp(cfg *config, cmd string, args []string) error {
 	}
 	return nil
 }
+
+
+func commandPokedex(cfg *config, cmd string, args []string) error {
+	logr.Debug("commandPokedex() IN", "values", fmt.Sprintf("%+v", cfg), "args", args)
+
+
+	fmt.Println("Your Pokedex:")
+	for _, pO := range pokeReg {
+		fmt.Printf("\t- %s\n", pO.Name)
+	}
+
+	return nil
+}
+
 func commandInspect(cfg *config, cmd string, args []string) error {
 	logr.Debug("commandInspect() IN", "values", fmt.Sprintf("%+v", cfg), "args", args)
 	if len(args) < 1 {

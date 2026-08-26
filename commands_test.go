@@ -130,7 +130,7 @@ Found Pokemon:
 
 }
 
-func TestCommandCatchAndInspect(t *testing.T) {
+func TestCommandCatchAndInspectAndListPokedex(t *testing.T) {
 
 	argsPoke := []string{"tentacool"}
 	isCaughtMsg := fmt.Sprintf("%s was caught!\n", argsPoke[0])
@@ -174,4 +174,17 @@ Types:
 	if got != want {
 		t.Errorf("got\n%sbut, wanted\n%s", got, want)
 	}
+
+	got, err = getStdout(commandPokedex, &cfg, "pokedex", []string{""})
+	if err != nil {
+		t.Errorf("%v", err)
+	}
+
+	want = `Your Pokedex:
+	- tentacool
+`
+	if got != want {
+		t.Errorf("got\n%sbut, wanted\n%s", got, want)
+	}
+
 }
