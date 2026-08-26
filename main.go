@@ -33,19 +33,24 @@ var cmdMap = map[string]cliCommand {
 	},
 	"explore": {
 		name: "explore",
-		description: "List Pokemon in given area",
+		description: "List Pokemon in given area: explore <map_area_name>",
 		callback: commandExplore,
 	},
 	"catch": {
 		name: "catch",
-		description: "Attempt to Catch named Pokemon",
+		description: "Attempt to Catch named Pokemon: catch <pokemon_name|id>",
 		callback: commandCatch,
+	},
+	"inspect": {
+		name: "inspect",
+		description: "List details for a Pokemon: inspect <pokemon_name>",
+		callback: commandInspect,
 	},
 
 }
 
 // Force help items to print in predetermined order:
-var helpKeyOrder = []string{"help", "exit", "map", "mapb", "explore", "catch"}
+var helpKeyOrder = []string{"help", "exit", "map", "mapb", "explore", "catch", "inspect"}
 var cfg = config{
 	reg: cmdMap,
 	helpOrder: helpKeyOrder,

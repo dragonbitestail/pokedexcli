@@ -26,6 +26,34 @@ func commandHelp(cfg *config, cmd string, args []string) error {
 	}
 	return nil
 }
+func commandInspect(cfg *config, cmd string, args []string) error {
+	logr.Debug("commandInspect() IN", "values", fmt.Sprintf("%+v", cfg), "args", args)
+	if len(args) < 1 {
+		return fmt.Errorf("inspect command requires Pokemon name parameter: catch <pokemon_name>")
+	}
+
+	pokeIdentifier := args[0]
+	pObj, ok := pokeReg[pokeIdentifier]
+	if !ok {
+		fmt.Println("you have not caught that pokemon")
+		return nil
+	}
+
+	fmt.Printf("Name: %s\nHeight: %d\nWeight: %d\n",
+		pObj.Name, pObj.Height, pObj.Weight)
+
+	fmt.Println("Types:")
+	for _, s := range pObj.Stats {
+		fmt.Printf("\t-%s: %d\n", s.Stat.Name, s.BaseStat)
+	}
+
+	fmt.Println("Types:")
+	for _, t := range pObj.Types {
+		fmt.Printf("\t- %s\n", t.Type.Name)
+	}
+
+	return nil
+}
 
 func commandCatch(cfg *config, cmd string, args []string) error {
 	logr.Debug("commandCatch() IN", "values", fmt.Sprintf("%+v", cfg), "args", args)
