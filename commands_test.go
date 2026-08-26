@@ -8,7 +8,14 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
+	"github.com/dragonbitestail/pokedexcli/internal/cache"
 )
+
+
+var cacheDuration = time.Second * time.Duration(200)
+var cachePokeAPI = pokecache.NewCache(time.Duration(cacheDuration))
+
 
 // WIP: Utility function for command func calls which output to stdout as a string
 // Modified from: https://go.dev/play/p/PNqa5M8zo7
@@ -63,6 +70,64 @@ func TestHelpCommand(t *testing.T) {
 
 }
 
+func TestMapAndMapbCommand(t *testing.T) {
+	cfg.pokeCache = cachePokeAPI
+	cfg.locationsAPI = "https://pokeapi.co/api/v2/location-area/?offset=0&limit=20"
+
+	_ = getStdout(commandMap, &cfg, "map", []string{})
+	_ = getStdout(commandMap, &cfg, "map", []string{})
+
+	got := getStdout(commandMapBack, &cfg, "map", []string{})
+
+	want := `canalave-city-area
+eterna-city-area
+pastoria-city-area
+sunyshore-city-area
+sinnoh-pokemon-league-area
+oreburgh-mine-1f
+oreburgh-mine-b1f
+valley-windworks-area
+eterna-forest-area
+fuego-ironworks-area
+mt-coronet-1f-route-207
+mt-coronet-2f
+mt-coronet-3f
+mt-coronet-exterior-snowfall
+mt-coronet-exterior-blizzard
+mt-coronet-4f
+mt-coronet-4f-small-room
+mt-coronet-5f
+mt-coronet-6f
+mt-coronet-1f-from-exterior
+`
+	if got != want {
+		t.Errorf("got\n%s but, wanted\n%s", got, want)
+	}
+}
+
 func TestExploreCommand(t *testing.T) {
-	t.Errorf("TODO: write this test!")
+	cfg.pokeCache = cachePokeAPI
+
+	//got := getStdout(commandExplore, &cfg, "explore", []string{"1"})
+	got := getStdout(commandExplore, &cfg, "explore", []string{"canalave-city-area"})
+
+	want := `Exploring canalave-city-area...
+Found Pokemon:
+	- tentacool
+	- tentacruel
+	- staryu
+	- magikarp
+	- gyarados
+	- wingull
+	- pelipper
+	- shellos
+	- gastrodon
+	- finneon
+	- lumineon
+`
+
+	if got != want {
+		t.Errorf("got\n%s but, wanted\n%s", got, want)
+	}
+
 }
