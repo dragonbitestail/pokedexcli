@@ -17,7 +17,7 @@ func cleanInput(text string) []string {
 	return lowered
 }
 
-func startRepl(cfg *config, reader io.Reader, isTest bool){
+func startRepl(cfg *config, reader io.Reader, isTest bool) (error , exitVal) {
 
 	scanner := bufio.NewScanner(reader)
 	for {
@@ -32,14 +32,22 @@ func startRepl(cfg *config, reader io.Reader, isTest bool){
 		}
 		command := words[0]
 		if cmd, ok := cfg.reg[command]; ok {
-			if err := cmd.callback(cfg, command, words[1:]); err != nil {
+			err, exitState := cmd.callback(cfg, command, words[1:])
+			if err != nil {
 				logr.Error(fmt.Sprintf("command `%s`, error: %v", command, err))
+				if isTest {
+					return err, exitState
+				}
 			}
+			if exitState.exit && ! isTest {
+				return nil, exitState
+			}
+
 		} else {
-			fmt.Println("Unknown command", )
+			fmt.Println("Unknown command")
 		}
-		if isTest {
-			return
+		if isTest && exitState.exit {
+			return nil, exitState
 		}
 	}
 

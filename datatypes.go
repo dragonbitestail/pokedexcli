@@ -7,7 +7,7 @@ import (
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config, string, []string) error
+	callback    func(*config, string, []string) (error, exitVal)
 }
 
 type config struct {

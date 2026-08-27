@@ -17,7 +17,7 @@ import (
 // Modified from: https://go.dev/play/p/PNqa5M8zo7
 // a link from SO:
 // https://stackoverflow.com/questions/10473800/in-go-how-do-i-capture-stdout-of-a-function-into-a-string
-func getStdout(fcall func(*config, string, []string) error, cfg *config, cmd string, args []string) (string, error) {
+func getStdout(fcall func(*config, string, []string) (error, exitVal), cfg *config, cmd string, args []string) (string, error) {
 	old := os.Stdout // keep backup of the real stdout
 	r, w, err := os.Pipe()
 	if err != nil {
@@ -34,7 +34,7 @@ func getStdout(fcall func(*config, string, []string) error, cfg *config, cmd str
 	}()
 
 	var ferr error
-	ferr = fcall(cfg, cmd, args) // works fine here
+	ferr, _ = fcall(cfg, cmd, args) // works fine here
 
 	// back to normal state
 	w.Close()

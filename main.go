@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"time"
@@ -98,5 +99,9 @@ func main() {
 	cfg.pokeCache = cachePokeAPI
 
 	isTest := false
-	startRepl(&cfg, os.Stdin, isTest)
+	err, exitSate := startRepl(&cfg, os.Stdin, isTest)
+  if err != nil {
+		fmt.Println("startRepl() returned err: ", err)
+	}
+	os.Exit(exitSate.code)
 }
