@@ -24,12 +24,12 @@ var cmdMap = map[string]cliCommand {
 	},
 	"map": {
 		name: "map",
-		description: "Display chunk of Pokemon world locations",
+		description: "Display next chunk of Pokemon world locations starting from beginning of available locations",
 		callback: commandMap,
 	},
 	"mapb": {
 		name: "mapb",
-		description: "Display chunk of Pokemon world locations backwards",
+		description: "Display chunk of Pokemon world locations backwards from current chunk",
 		callback: commandMapBack,
 	},
 	"explore": {
@@ -44,7 +44,7 @@ var cmdMap = map[string]cliCommand {
 	},
 	"inspect": {
 		name: "inspect",
-		description: "List details for a Pokemon: inspect <pokemon_name>",
+		description: "List details for a Pokemon caught with the `catch` command: inspect <pokemon_name>",
 		callback: commandInspect,
 	},
 	"pokedex": {
