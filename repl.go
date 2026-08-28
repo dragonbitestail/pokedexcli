@@ -25,7 +25,7 @@ func startRepl(cfg *config, reader io.Reader, isTest bool) (error , exitVal) {
 		scanner.Scan()
 
 		line := scanner.Text()
-		logr.Info("scanner.text", "line", line)
+		logr.Debug("scanner.text", "line", line)
 		words := cleanInput(line)
 		if len(words) < 1 {
 			continue
