@@ -28,16 +28,16 @@ cd pokedexcli
 go build
 ```
 
-You should now have an executable in build_dir_parent/pokedexcli called pokedexcli
+You should now have an executable in `build_dir_parent/pokedexcli` called pokedexcli
 
 ### Deploy
 
-Move pokedexcli whereever you like. Preferably in a directory in your Os's path.
+Move pokedexcli whereever you like. Preferably in a directory in your OS's path.
 
 ### Run
 
 If you placed pokedexcli in your OS's path:
-`./pokedexcli`
+`pokedexcli`
 
 This will launch an interactive command prompt.
 
