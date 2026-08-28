@@ -56,3 +56,10 @@ To change the cache duration of retrieved and locally stored Pokedex objects use
 
 Combine the two:
 `LOG_LEVEL=Info POKEDEX_CACHE_DUR_SECS=900 pokedexcli`
+
+On Windows in cmd.exe terminal shell:
+`set LOG_LEVEL=info`
+`pokedexcli`
+
+To unset:
+`set LOG_LEVEL=`
