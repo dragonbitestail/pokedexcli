@@ -43,3 +43,16 @@ This will launch an interactive command prompt.
 
 Type `help` to see available commands.
 Type `exit` to return to your terminal shell.
+
+### Environment variables
+
+To control default logging levels where WARN is the default, use LOG_LEVEL like:
+ `LOG_LEVEL=INFO pokedexcli`
+
+where levels are those supported by the [Go slog package](https://pkg.go.dev/log/slog#Level)
+
+To change the cache duration of retrieved and locally stored Pokedex objects use the POKEDEX_CACHE_DUR_SECS environment variable like:
+`POKEDEX_CACHE_DUR_SECS=900 pokedexcli`
+
+Combine the two:
+`LOG_LEVEL=Info POKEDEX_CACHE_DUR_SECS=900 pokedexcli`
