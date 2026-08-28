@@ -58,7 +58,7 @@ var cmdMap = map[string]cliCommand {
 // Force help items to print in predetermined order:
 var helpKeyOrder = []string{"help", "exit", "map", "mapb", "explore", "catch", "inspect", "pokedex"}
 
-var cacheDuration = time.Second * 200
+var cacheDuration = time.Second * 900
 var cachePokeAPI *pokecache.Cache
 
 var cfg = config{
