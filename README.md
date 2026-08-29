@@ -62,6 +62,7 @@ Combine the two:
 On Windows in cmd.exe terminal shell:
 
 `set LOG_LEVEL=info`
+
 `pokedexcli`
 
 To unset:
